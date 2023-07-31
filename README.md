@@ -71,5 +71,5 @@ I have included monitor examples with Nodeping and Statuscake websites.
 - bottom of the bootstrap file as well.
 
 
-## Additional Credit to Andrew Grexa @grxy 
+## Additional Credit to [Andrew Grexa](https://github.com/grxy)
 He worked on websites with me back then and no doubt helped with some of the non Puppet components of this repo. 
