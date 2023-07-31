@@ -1,0 +1,36 @@
+Current workflow is based on scripts
+
+# SSL Info
+DORG='example'                 # O   Common Organization Name
+DDOMAIN=$DN                     # CN
+DOU='IT'                        # OU, can be left at IT
+DCOUNTRY='US'                   # C 
+DSTATE='COLORADO'               # ST
+DCITY='DENVER'                  # L 
+
+mkdir -p /root/ssl/self
+mkdir /root/ssl/ca
+
+chmod -R 700 /root/ssl/
+
+
+# CSR with variables above
+openssl req -new -sha256 -nodes -days 365 -newkey rsa:2048 -keyout /root/ssl/ca/$DN.key -out /root/ssl/ca/$DN.csr  \
+-subj "/O=$DORG/CN=$DDOMAIN/OU=$DOU/C=$DCOUNTRY/ST=$DSTATE/L=$DCITY"
+chmod 400 /root/ssl/ca/*
+
+
+# Self Sign x509 with variables above, 10 years for self signed
+openssl req -x509 -sha256 -nodes -days 3650 -newkey rsa:2048 -keyout /root/ssl/self/$DN.key -out /root/ssl/self/$DN.crt \
+-subj "/O=$DORG/CN=$DDOMAIN/OU=$DOU/C=$DCOUNTRY/ST=$DSTATE/L=$DCITY"
+chmod 400 /root/ssl/self/*
+
+# Copy self sign to correct locations. 
+cp /root/ssl/self/$DN.key /etc/pki/tls/private/
+chmod 700 /etc/pki/tls/private
+cp /root/ssl/self/$DN.crt /etc/pki/tls/certs/
+chmod 700 /etc/pki/tls/certs
+
+# cat the request to a file for easier viewing
+cat /root/ssl/ca/$DN.csr > /root/ssl/$DN.request.txt
+

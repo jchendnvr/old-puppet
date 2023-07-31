@@ -1,0 +1,58 @@
+class roundcube {
+  include email::full
+
+  package { 'php-domxml-php4-php5':
+    ensure    => present,
+  }
+
+  exec  { 'install-pear-packages':
+    require   => Package['php-domxml-php4-php5'],
+    creates   => '/etc/example/checks/php-pear-roundcube-check',
+    command   => '/etc/init.d/php-fpm restart; \
+        /usr/bin/pear channel-update pear.php.net; \
+        /usr/bin/pear install Auth_SASL Net_SMTP Mail_mime Mail_mimeDecode; \
+        /bin/pear install channel://pear.php.net/Net_IDNA2-0.1.1; \
+        /bin/touch /etc/example/checks/php-pear-roundcube-check',
+  }
+
+
+# Steps
+Requires php54
+yum install centos-release-SCL
+
+#yum install these
+php54-php.x86_64
+php54-php-cli.x86_64
+php54-php-common.x86_64
+php54-php-devel.x86_64
+php54-php-domxml-php4-php5.noarch
+php54-php-fpm.x86_64
+php54-php-gd.x86_64
+php54-php-intl.x86_64
+php54-php-mbstring.x86_64
+php54-php-mcrypt.x86_64
+php54-php-mysql.x86_64
+php54-php-pdo.x86_64
+php54-php-pear.noarch
+php54-php-xml.x86_64
+php54-php-mysqlnd
+
+# they are based out of /opt/rh/php54
+scl enable php54 bash
+
+#/opt/rh/php54/root/usr/bin/php 
+#/opt/rh/php54/root/usr/bin/pear 
+
+You can to go through the new php.ini and the new php-fpm.d/www.conf line by line
+You have to set the new php time
+You have to chkconfig on php54-php-fpm and off the other/
+You have to start php54-php-fpm
+
+8AkFGWkNgQ7NiOZRBZhgZxqySwdmKca
+8AkFGWkNgQ7NiOZRBZhgZxqySwdmKca
+You have to create a db and add a user.
+You have to give that user permissions needed. 
+
+
+
+}

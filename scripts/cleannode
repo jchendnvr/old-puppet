@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# Author: Jesse Chenhalls
+# Created Date: 20151005
+
+
+# cleannode
+#
+# Remove node based on hostname
+
+# ping -c 1 test.example.com | grep PING | cut -d '(' -f2 | cut -d ')' -f1
+
+if [ -z $1 ];
+  then 
+    echo 'Useage: cleannode hostname ip-address'
+    exit
+fi
+
+HOST=$1
+
+# set IP
+if [ -z $2 ];
+  then
+    IP=$(/bin/ping -c 1 $HOST | /bin/grep PING | /bin/cut -d '(' -f2 | /bin/cut -d ')' -f1)
+else
+  IP=$2
+fi
+
+echo "The IP is $IP"
+# clean puppet
+/usr/bin/puppet cert clean $HOST 
+
+# clear HOST and IP from ssh known_hosts
+/bin/grep -v $HOST ~/.ssh/known_hosts > ~/.ssh/known_hosts.bk
+/bin/mv ~/.ssh/known_hosts.bk ~/.ssh/known_hosts
+
+/bin/grep -v $IP ~/.ssh/known_hosts > ~/.ssh/known_hosts.bk
+/bin/mv ~/.ssh/known_hosts.bk ~/.ssh/known_hosts
+
+# clear node definition
+/bin/find /etc/puppet/manifests/ | /bin/grep $HOST | /usr/bin/xargs /bin/rm -f 
+

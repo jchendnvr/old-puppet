@@ -1,0 +1,314 @@
+## Dovecot configuration file
+# /etc/dovecot/dovecot.conf
+# 1/25/2015
+# Jesse Chenhalls
+#
+# http://wiki2.dovecot.org/Variables
+# http://wiki2.dovecot.org/VirtualUsers
+# http://wiki2.dovecot.org/PasswordDatabase/PAM
+#
+
+
+#################
+# main
+#################
+
+login_greeting = ready
+protocols = imap sieve
+# ipv4 only with listen = * and drop ::
+listen = *
+#listen = *, ::
+#base_dir = /var/run/dovecot/
+#login_trusted_networks =
+#login_access_sockets =
+#verbose_proctitle = no
+#shutdown_clients = yes
+#doveadm_worker_count = 0
+#doveadm_socket_path = doveadm-server
+
+## Dictionary server settings
+##
+# "proxy::<name>".
+
+dict {
+}
+
+
+
+
+#################
+# 10-auth.conf
+#################
+disable_plaintext_auth = yes
+auth_cache_size = 10M
+auth_cache_ttl = 1 hour
+auth_cache_negative_ttl = 10 min
+
+passdb {
+  driver = pam
+  args = max_requests=100 
+  # cache_key="%s%u"
+}
+
+userdb {
+  driver = passwd
+}
+
+
+
+auth_mechanisms = plain login
+
+
+
+
+#################
+# 10-logging.conf
+#################
+
+log_path = syslog
+syslog_facility = mail
+auth_verbose = no
+# options are no | plain | sha1
+auth_verbose_passwords = no
+auth_debug = no
+
+auth_debug_passwords = no
+mail_debug = no
+verbose_ssl = no
+
+
+# sfrftime http://php.net/manual/en/function.strftime.php
+log_timestamp = "%G%m%d - %H:%M:%S "
+
+
+
+#################
+# 10-mail.conf
+#################
+
+mail_location = maildir:~/mail
+
+# should later look at shared and public namespaces for group 
+# accounts # although http://wiki2.dovecot.org/Namespaces says 
+# they are not supported often 
+
+mail_plugins = $mail_plugins quota zlib fts fts_squat
+
+#################
+# 10-master.conf
+#################
+
+#default_process_limit = 100
+#default_client_limit = 1000
+#default_vsz_limit = 256M
+
+# disable regular imap
+service imap-login {
+  inet_listener imap {
+    # port = 143
+    port = 0
+    ssl = no
+  }
+  inet_listener imaps {
+    port = 993
+    ssl = yes
+  }
+  service_count = 1
+  process_min_avail = 1
+  vsz_limit = 64M
+}
+
+# disable pop3 by default
+service pop3-login {
+  inet_listener pop3 {
+    # port 110
+    port = 0
+    ssl = no 
+  }
+  inet_listener pop3s {
+    # port = 995
+    # ssl = yes
+    port = 0
+    ssl = no
+  }
+}
+
+service managesieve-login {
+  inet_listener sieve {
+    port = 0
+  }
+}
+
+service imap {
+  # increase this limit if you have huge mailboxes.
+  vsz_limit = 256M
+  
+  # IMAP processes (connections)
+  process_limit = 1024
+}
+
+service pop3 {
+  # POP3 processes (connections)
+  process_limit = 0
+}
+
+service auth {
+  unix_listener auth-userdb {
+    #mode = 0600
+    #user =
+    #group =
+  }
+
+  # Postfix smtp-auth
+  #unix_listener /var/spool/postfix/private/auth {
+  #  mode = 0666
+  #}
+  unix_listener /var/spool/postfix/private/auth {
+        mode = 0660
+        user = postfix
+        group = postfix
+  } #end listener
+  # Auth process is run as this user.
+  #user = $default_internal_user
+}
+
+
+
+#################
+# 10-ssl.conf
+#################
+
+ssl = yes
+#ssl_cert = </etc/pki/dovecot/certs/dovecot.pem
+#ssl_key = </etc/pki/dovecot/private/dovecot.pem
+ssl_cert = </etc/pki/tls/certs/<%= @fqdn -%>.crt
+ssl_key = </etc/pki/tls/private/<%= @fqdn -%>.key
+
+
+# ssl CA should be bundled with cert file in this order
+# 1) Dovecot's public certificate
+# 2) TDC SSL Server CA
+# 3) TDC Internet Root CA
+# 4) Globalsign Partners CA
+
+# hours to regen
+ssl_parameters_regenerate = 168
+#ssl_cipher_list = ALL:TLSv1:TLSv1.1:TLSv1.2:!LOW:!SSLv2:!EXP:!aNULL
+ssl_cipher_list=ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:AES:CAMELLIA:DES-CBC3-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA
+
+#################
+# 15-lda.conf
+#################
+
+# default rejection email sender
+#postmaster_address = 
+# default is system hostname
+#hostname =
+
+#rejection_subject = Rejected: %s
+#rejection_reason = Your message to <%t> was automatically rejected:%n%r
+
+
+
+#################
+# 20-imap.conf
+#################
+
+protocol imap {
+  mail_max_userip_connections = 10
+  imap_idle_notify_interval = 2 mins
+
+  imap_id_send = ""
+  mail_plugins = $mail_plugins autocreate imap_quota
+}
+
+
+
+#################
+# 20-pop3.conf
+#################
+
+protocol pop3 {
+  pop3_uidl_format = %08Xu%08Xv
+  mail_max_userip_connections = 3
+}
+
+
+
+#################
+# 90-plugin.conf
+#################
+
+# explore plugins 
+# http://wiki2.dovecot.org/Plugins
+# mail_filter, quota, stats, virtual, antispam, trash
+
+plugin {
+  quota = maildir
+  quota_rule = *:storage=1000M
+  quota_rule2 = Trash:storage=+100M
+  quota_rule3 = Junk:ignore
+}
+
+
+#################
+# 90-sieve.conf
+#################
+
+plugin {
+  # The path to the user's main active script. 
+  sieve = ~/.dovecot.sieve
+  sieve_dir = ~/sieve
+  sieve_global_dir = /home/sieve
+  sieve_max_script_size = 1M
+}
+
+plugin {
+  autocreate = Trash
+  autosubscribe = Trash
+  autocreate2 = Junk
+  autosubscribe2 = Junk
+  autocreate3 = Drafts
+  autosubscribe3 = Drafts
+  autocreate4 = Sent
+  autosubscribe4 = Sent
+  autocreate5 = Archive
+  autosubscribe5 = Archive
+}
+
+#plugin {
+#  zlib_save_level = 6 # 1..9
+#  zlib_save = gz # or bz2, xz or lz4
+#}
+
+
+# squat is version 2.x specific, 2.1x and 2.1+ require different
+plugin {
+  fts = squat
+  fts_squat = partial=4 full=10
+}
+
+
+#################
+# 90-quota.conf
+#################
+
+#namespace inbox {
+#   mailbox Drafts {
+#        special_use = \Drafts
+#        auto = subscribe
+#    }
+#    mailbox Junk {
+#        special_use = \Junk
+#        auto = subscribe
+#     }
+#    mailbox Trash {
+#        special_use = \Trash
+#        auto = subscribe
+#    }
+#    mailbox Sent {
+#        special_use = \Sent
+#        auto = subscribe
+#      }
+#}
+

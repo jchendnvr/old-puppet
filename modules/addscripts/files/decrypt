@@ -1,0 +1,34 @@
+#!/bin/bash
+
+# Author: Jesse Chenhalls
+# Created Date: 20151005
+
+# decrypt
+# the decrypt side of encrypt script
+vencd=$1
+vpass=$2
+vdir=$3 # optionaly pass d to indicate dir
+if [ -z "$vencd" ]; then
+        read -e -p "Please enter the file to decrypt: `echo $'\n> '`" vencd;
+fi
+
+if [ -z $vpass ]; then
+        vpasschk=0;
+        while [ $vpasschk -ne 1 ];
+        do
+                read -p "Please enter the password: `echo $'\n> '`" -s vpass;
+                if [ -z $vpass ]; then
+                        echo "Password is blank";
+                elif [ -n $vpass ]; then
+                        vpasschk=1;
+                fi
+        done
+fi
+
+if [[ $vdir == "d"  ]] || [[ ${vencd: -8} ==  ".d.crypt" ]]; then
+	openssl enc -d -pass pass:$vpass -aes256 -salt -in $vencd | tar -xz;
+   else
+        vout=$(basename -s .crypt $vencd);
+	echo "\$vout is $vout";
+        openssl enc -d -pass pass:$vpass -aes256 -salt -in $vencd -out $vout;
+fi

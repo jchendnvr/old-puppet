@@ -1,0 +1,48 @@
+#!/bin/bash
+
+# Author: Jesse Chenhalls
+# Created Date: 20151005
+
+# encrypt 
+# encrypt using openssl and tar on dirs
+venc=$1
+vout=$2
+vpass=$3
+
+# first check for existence of file to encrypt arg $venc
+if [ -z "$venc" ]; then
+        read -e -p "Please enter the file or dir name to encrypt: `echo $'\n> '`" venc;
+fi
+
+# now check for the existence of $vout      
+if [ -z "$vout" ]; then
+        read -e -p "Please enter the filename to output: `echo $'\n> '`" vout;
+fi
+
+# now check for existence of $vpass
+if [ -z $vpass ]; then
+        vpasschk=0;
+	while [ $vpasschk -ne 1 ];
+        do
+                read -p "Please enter the password: `echo $'\n> '`" -s vpass1;
+                read -p "Please verify password: `echo $'\n> '`" -s vpass2;
+                if [ -z $vpass1 ]; then
+                        echo "Password is blank";
+                elif [ $vpass1 == $vpass2 ]; then
+                        vpasschk=1;
+                        vpass=$vpass1;  
+                elif [ $vpass1 != $vpass2 ]; then
+                        echo "Passwords do not match";
+                fi
+        done
+fi
+
+if [ -d $venc ]; then
+	vout=$vout.d.crypt
+	tar --create --file - --posix -z -- $venc | openssl enc -pass pass:$vpass -aes256 -salt -out $vout;
+elif [ -f $venc ]; then
+	vout=$vout.crypt
+	openssl enc -pass pass:$vpass -aes256 -salt -in $venc -out $vout;
+fi
+
+echo "$venc has been encrypted to $vout with password $vpass"

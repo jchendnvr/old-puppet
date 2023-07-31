@@ -1,0 +1,94 @@
+#!/bin/bash
+
+# Author: Jesse Chenhalls
+# Created Date: 20151005
+
+# Change the below to a temp password used on your images. 
+TEMPPASS='TEMP-PASSWORD123!'
+
+# if check for this
+PUPPETMASTER='puppet.example.com'
+
+/bin/echo 'IP:  ' $1
+/bin/echo 'Hostname:  ' $2
+
+# set hostname and network file
+/usr/bin/sshpass -p$TEMPPASS ssh -o StrictHostKeyChecking=no root@$1 " \
+  /bin/hostname $2; 
+  /bin/echo '127.0.0.1  $2 localhost localhost.localdomain localhost4 localhost4.localdomain4' > /etc/hosts; \
+  /bin/echo 'NETWORKING=yes' > /etc/sysconfig/network; /bin/echo 'HOSTNAME=$2' >> /etc/sysconfig/network; \
+"
+
+# set networking ifcfg-eth0 file and run yum -y update
+/usr/bin/sshpass -p$TEMPPASS /usr/bin/scp /etc/puppet/payload/set-network root@$1:/root/
+/usr/bin/sshpass -p$TEMPPASS /usr/bin/ssh -o StrictHostKeyChecking=no root@$1 "/root/set-network; \
+    /usr/bin/yum -y update 2>&1 > /root/log-updated-packages"
+
+# install puppet
+/usr/bin/sshpass -p$TEMPPASS /usr/bin/scp /etc/puppet/payload/puppetlabs-release-el-6.noarch.rpm root@$1:/root/
+/usr/bin/sshpass -p$TEMPPASS /usr/bin/ssh -o StrictHostKeyChecking=no root@$1 "/bin/rpm -ivh /root/puppetlabs-release-el-6.noarch.rpm; \
+        /usr/bin/yum -y install puppet 2>&1 > /root/log-puppet-install; \
+        /bin/echo '
+server = $PUPPETMASTER
+' >> /etc/puppet/puppet.conf; \
+"
+
+# generate the puppet certs locally and then copy over
+DOMAIN=$2
+/usr/bin/puppet cert --generate $DOMAIN
+/bin/sleep 10
+
+# show keys
+ls /var/lib/puppet/ssl/private_keys/$DOMAIN.pem
+ls /var/lib/puppet/ssl/certs/$DOMAIN.pem
+ls /var/lib/puppet/ssl/certs/ca.pem
+
+# create dir then copy keys
+/usr/bin/sshpass -p$TEMPPASS /usr/bin/ssh -o StrictHostKeyChecking=no root@$1 '/bin/mkdir -p /var/lib/puppet/ssl/{private_keys,certs}' 
+/usr/bin/sshpass -p$TEMPPASS /usr/bin/scp /var/lib/puppet/ssl/private_keys/$DOMAIN.pem root@$1:/var/lib/puppet/ssl/private_keys/
+/usr/bin/sshpass -p$TEMPPASS /usr/bin/scp /var/lib/puppet/ssl/certs/$DOMAIN.pem root@$1:/var/lib/puppet/ssl/certs/
+/usr/bin/sshpass -p$TEMPPASS /usr/bin/scp /var/lib/puppet/ssl/certs/ca.pem root@$1:/var/lib/puppet/ssl/certs/
+
+# sleep before second run
+/bin/sleep 120
+# run puppet agent -t twice and log.
+/usr/bin/sshpass -p$TEMPPASS /usr/bin/ssh -o StrictHostKeyChecking=no root@$1 '/usr/bin/puppet agent -t 2>&1 > /root/log-puppet-run1; \
+    /bin/echo "
+
+    !! Second Run !!" >> /root/log-puppet-run1; \
+    /usr/bin/puppet agent -t 2>&1 >> /root/log-puppet-run1' 
+
+echo '   
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !!! Server Bootstrap Complete !!!
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+'
+
+
+# ADD A MONITOR HERE 
+
+# echo '
+#   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#   !!! Adding NodePing Monitor   !!!
+#   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# '
+#/etc/puppet/scripts/nodeping/checks/create $2
+
+# echo '
+#   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#   !!!  Created NodePing Monitor !!!
+#   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# '
+
+# echo '
+#   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#   !!! Adding StatusCake Test    !!!
+#   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# '
+# #/etc/puppet/scripts/statuscake/tests/create $2
+# echo '
+#   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#   !!! Created StatusCake Test   !!!
+#   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# '
+

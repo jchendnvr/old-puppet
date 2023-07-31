@@ -1,0 +1,15 @@
+#!/bin/bash
+
+if [ $# -eq 1 ]; then
+    # create ping monitor
+    curl -s 'https://api.nodeping.com/api/1/checks?token=TEST123TEST123' -H 'Content-Type: application/x-www-form-urlencoded' --data "type=PING&target=$1&enabled=true&interval=1&label=$1+Ping+Monitor&notifications=%5B%7B%22U177N%22%3A+%22All%22%7D%5D" --compressed > /dev/null
+
+    # create http monitor
+    curl -s 'https://api.nodeping.com/api/1/checks?token=TEST123TEST123' -H 'Content-Type: application/x-www-form-urlencoded' --data "type=HTTP&target=https%3A%2F%2F$1&enabled=true&interval=1&label=$1+HTTP+Monitor&notifications=%5B%7B%22U177N%22%3A+%22All%22%7D%5D" --compressed > /dev/null
+
+    exit 0
+else
+    echo 'Invalid Number of Parameters'
+
+    exit 1
+fi

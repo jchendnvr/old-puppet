@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# Author: Jesse Chenhalls
+# Created Date: 20151005
+
+for i in {1..100}; do 
+   echo "" 
+done 
+clear

@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# Author: Jesse Chenhalls
+# Created Date: 20151005
+
+echo 'netstat -tulpn'
+netstat -tulpn
+echo '###################################'
+iptables -nvL INPUT

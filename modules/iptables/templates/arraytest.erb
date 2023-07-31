@@ -1,0 +1,32 @@
+#stuff <% @fqdn -%> 
+
+#more stuff <%= @fqdn -%>
+
+#nameservers <%= @nameservers -%>
+
+#nameservers2 <%= @nameservers %>
+
+#is nameservers an array ?
+#<%= @nameservers.kind_of?(Array) %>
+
+is FDSA an array?
+<%= @FDSA.kind_of?(Array) %>
+
+Loop through FDSA
+<% @FDSA.each do |line| -%>
+-A INPUT -p tcp -m tcp --dport <%= line -%> -J ACCEPT
+<% end -%>
+
+
+LOOP
+<%  @nameservers.each_line do |line| -%>
+-A OUTPUT -d <%= line.strip -%>/32 -p tcp --dport 53 -j ACCEPT
+-A OUTPUT -d <%= line.strip -%>/32 -p udp --dport 53 -j ACCEPT
+<% end -%>
+
+
+
+
+
+#END
+

@@ -1,0 +1,11 @@
+#!/bin/bash
+# Author: Jesse Chenhalls
+# Created Date: 20151005
+
+echo "You have $( free -m | awk 'FNR == 2 {print $4}') Megabytes free"
+ans1=$(free -m | awk 'FNR == 2 { print $4}') 
+sudo sh -c "sync; echo 3 > /proc/sys/vm/drop_caches"
+echo "You now have $( free -m | awk 'FNR == 2 {print $4}') Megabytes free"
+ans2=$(free -m | awk 'FNR == 2 { print $4}')
+echo "You have freed $( expr $ans2 - $ans1 ) Megabytes"
+

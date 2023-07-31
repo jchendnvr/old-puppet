@@ -1,0 +1,4 @@
+*.swp
+manifests/biz/*.pp
+manifests/int/*.pp
+

@@ -1,0 +1,11 @@
+set nu
+colorscheme elflord
+set expandtab
+set tabstop=2
+set ai
+"set si
+""set smarttab
+set incsearch
+set ignorecase
+set smartcase
+"set backspace=eol,start,indent

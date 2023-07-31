@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# Author: Jesse Chenhalls
+# Created Date: 20151005
+
+CTEMP=$((`cat /sys/class/thermal/thermal_zone0/temp` /1000))
+echo "CPU Temperature is:"
+echo "$CTEMP Celsius"
+FTEMP=$(expr 9 '*' $CTEMP / 5 + 32)
+echo "$FTEMP Fahrenheit"
+

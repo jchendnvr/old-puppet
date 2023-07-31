@@ -1,0 +1,3 @@
+ssh-rsa FIRST_LONG_KEY= CLIENT_KEY
+ssh-rsa BACKUPPC_KEY= backuppc@backup.example.com
+

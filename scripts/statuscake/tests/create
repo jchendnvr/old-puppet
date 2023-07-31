@@ -1,0 +1,20 @@
+#!/bin/bash
+
+URL="https://www.statuscake.com/API/Tests/Update"
+USERNAME="USERNAME"
+API="TEST123TEST123"
+CHECKRATE="300"
+CONTACTGROUP="20764"
+
+if [ $# -eq 1 ]; then
+
+    for TYPE in "PING" "HTTP"; do
+        curl -s -X PUT "$URL" -H 'Content-Type: application/x-www-form-urlencoded' -H "API: $API" -H "Username: $USERNAME" --data "WebsiteName=$1+$TYPE+Monitor&WebsiteURL=$1&CheckRate=$CHECKRATE&TestType=$TYPE&ContactGroup=$CONTACTGROUP" --compressed > /dev/null
+    done
+
+    exit 0
+else
+    echo 'Invalid Number of Parameters'
+
+    exit 1
+fi

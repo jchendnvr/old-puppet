@@ -1,0 +1,91 @@
+## /etc/vsftpd/vsftpd.conf
+#
+# Allow anonymous FTP? (Beware - allowed by default if you comment this out).
+anonymous_enable=no
+anon_upload_enable=no
+anon_mkdir_write_enable=no
+# If you want, you can arrange for uploaded anonymous files to be owned by
+# # a different user. Note! Using "root" for uploaded files is not
+# # recommended!
+# #chown_uploads=YES
+# #chown_username=whoever
+#
+# Uncomment this to allow local users to log in.
+local_enable=YES
+#
+# Uncomment this to enable any form of FTP write command.
+write_enable=YES
+# Default umask for local users is 077. You may wish to change this to 022,
+local_umask=022
+# Activate directory messages - messages given to remote users when they
+# go into a certain directory.
+dirmessage_enable=YES
+
+
+# The target log file can be vsftpd_log_file or xferlog_file.
+# This depends on setting xferlog_std_format parameter
+xferlog_enable=YES
+# WARNING - changing this filename affects /etc/logrotate.d/vsftpd.log
+xferlog_file=/var/log/ftp
+# NO writes to vsftpd_log_file, YES to xferlog_file
+xferlog_std_format=YES
+
+
+# Make sure PORT transfer connections originate from port 20 (ftp-data).
+connect_from_port_20=YES
+
+
+# You may change the default value for timing out an idle session.
+idle_session_timeout=600
+# You may change the default value for timing out a data connection.
+data_connection_timeout=120
+
+
+# ftp server can use as unprivileged user.
+nopriv_user=ftpsecure
+
+# Enable this and the server will recognise asynchronous ABOR requests. Not
+# recommended for security (the code is non-trivial). Not enabling it,
+# however, may confuse older FTP clients.
+async_abor_enable=no
+
+# Trn on to have the server actually do ASCII mode.
+# Beware, some ASCII support allows a denial of service DDOS
+ascii_upload_enable=YES
+ascii_download_enable=YES
+
+# You may fully customise the login banner string:
+ftpd_banner=Use of this server is logged, leave if you do not have permission to be here. 
+
+chroot_local_user=YES
+
+
+# activate the "-R" option to the builtin ls. Needed by some older clients
+ls_recurse_enable=no
+
+# can not have both IPv4 and IPv6
+# IPv4
+listen=YES
+# IPv6
+listen_ipv6=no
+
+
+pam_service_name=vsftpd
+
+# use /etc/vsftpd/user_list to allow users
+userlist_enable=yes
+userlist_deny=NO
+
+tcp_wrappers=YES
+
+ssl_enable=YES
+allow_anon_ssl=NO
+force_local_data_ssl=NO
+force_local_logins_ssl=NO
+ssl_tlsv1=YES
+ssl_sslv2=NO
+ssl_sslv3=NO
+require_ssl_reuse=NO
+ssl_ciphers=HIGH
+rsa_cert_file=/etc/pki/tls/certs/<%= @fqdn -%>.crt
+rsa_private_key_file=/etc/pki/tls/private/<%= @fqdn -%>.key

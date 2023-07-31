@@ -1,0 +1,95 @@
+*filter
+:INPUT DROP [0:0]
+:FORWARD DROP [0:0]
+:OUTPUT ACCEPT [0:0]
+:UALLOW - [0:0]
+:UDENY - [0:0]
+:LOGS - [0:0]
+
+-A INPUT -i lo -j ACCEPT 
+-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT 
+-A INPUT -p icmp -m limit --limit 30/sec -j ACCEPT 
+-A INPUT -j UALLOW
+-A INPUT -j UDENY
+# DNS
+# GLOBAL INPUT PORTS
+# parse allow ports
+# Hard Coded Policies
+-A INPUT -s 45.56.124.36/32 -p tcp -m tcp --dport 22222 -j ACCEPT 
+-A INPUT -j LOGS
+-A INPUT -j LOGS 
+
+-A LOGS -j LOG --log-prefix "[IPTABLES DROP] :   "   
+-A LOGS -j DROP 
+
+-A UALLOW -s 127.0.0.1/32 -j ACCEPT
+-A UALLOW -d 127.0.0.1/32 -j ACCEPT
+-A UALLOW -s <%- @ipaddress -%> -j ACCEPT
+-A UALLOW -d <%- @ipaddress -%> -j ACCEPT 
+# parse allow ip and ports
+
+# Parse deny ports
+-A UDENY -S BAD-IP/32 -j DROP
+-A UDENY -D BAD-IP/32 -j DROP
+
+# need to test output deny
+
+COMMIT
+
+
+________________________________________________________________
+
+*filter
+:INPUT DROP [0:0]
+:FORWARD DROP [0:0]
+:OUTPUT ACCEPT [0:0]
+:UALLOW - [0:0]
+:UDENY - [0:0]
+:LOGS - [0:0]
+-A INPUT -i lo -j ACCEPT 
+-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT 
+-A INPUT -p icmp -m limit --limit 30/sec -j ACCEPT 
+-A INPUT -j UALLOW
+-A INPUT -j UDENY
+# DNS
+#<%  @nameservers.each_line do |line| -%> 
+#-A OUTPUT -d <%= line.strip -%>/32 -p tcp --dport 53 -j ACCEPT
+#-A OUTPUT -d <%= line.strip -%>/32 -p udp --dport 53 -j ACCEPT
+#<% end -%> 
+# GLOBAL INPUT PORTS
+<% @ALLOWPORTS.each do |line| -%>
+-A INPUT -p tcp -m tcp --dport <%= line -%> -j ACCEPT
+<% end -%>
+-A INPUT -s 45.56.124.36/32 -d <%= @ipaddress -%> -p tcp -m tcp --dport 22222 -j ACCEPT 
+-A INPUT -j LOGS
+-A INPUT -j LOGS 
+-A LOGS -j LOG --log-prefix "[IPTABLES DROP] :   "   
+-A LOGS -j DROP 
+-A UALLOW -s 127.0.0.1/32 -j ACCEPT
+-A UALLOW -d 127.0.0.1/32 -j ACCEPT
+-A UALLOW -s <%= @ipaddress -%> -j ACCEPT
+-A UALLOW -d <%= @ipaddress -%> -j ACCEPT 
+-A UALLOW -j DROP
+# parse allow ip and ports
+# Parse deny ports
+#-A UDENY -S BAD-IP/32 -j DROP
+#-A UDENY -D BAD-IP/32 -j DROP
+# need to test output deny
+COMMIT
+
+_____________________________________________________________
+
+*filter
+:INPUT DROP [0:0]
+:FORWARD DROP [0:0]
+:OUTPUT ACCEPT [69:7208]
+:LOGS - [0:0]
+-A INPUT -i lo -j ACCEPT 
+-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT 
+-A INPUT -s 45.56.124.36/32 -p tcp -m tcp --dport 22222 -j ACCEPT 
+-A INPUT -j LOGS 
+-A LOGS -j LOG --log-prefix "[IPTABLES DROP] :   " 
+-A LOGS -j DROP 
+COMMIT
+
+

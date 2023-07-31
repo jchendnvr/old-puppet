@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# Author: Jesse Chenhalls
+# Created Date: 20151005
+
+len=$1
+if [ -z $len ]; then
+	len=20;
+else
+	len=$(( $len + 5 ));
+fi
+
+openssl rand -base64 $len | cut -c5-$len

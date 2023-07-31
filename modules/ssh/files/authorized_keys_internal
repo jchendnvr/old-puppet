@@ -1,0 +1,2 @@
+ssh-rsa FIRST_LONG_KEY= Internal_Key
+ssh-rsa BACKUPPC_KEY= backuppc@backup.example.com

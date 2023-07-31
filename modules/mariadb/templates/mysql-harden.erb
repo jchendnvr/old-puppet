@@ -1,0 +1,11 @@
+UPDATE mysql.user SET Password = PASSWORD('<%= @ROOTDBPASS -%>') WHERE User = 'root';
+FLUSH PRIVILEGES;
+SET PASSWORD FOR ''@'localhost' = PASSWORD('<%= @ROOTDBPASS -%>');
+SET PASSWORD FOR ''@"<%= @fqdn -%>" = PASSWORD('<%= @ROOTDBPASS -%>');
+UPDATE mysql.user SET Password = PASSWORD('<%= @ROOTDBPASS -%>') WHERE User = '';
+FLUSH PRIVILEGES;
+DROP USER ''@'localhost';
+DELETE FROM mysql.db WHERE db LIKE 'test%';
+FLUSH PRIVILEGES;
+DROP DATABASE test;
+FLUSH PRIVILEGES; 

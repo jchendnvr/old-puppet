@@ -1,0 +1,25 @@
+#!/bin/bash
+
+IPADDR=$(/sbin/ip addr list eth0 | /bin/grep 'inet ' | /bin/awk '{print $2}' | /bin/cut -d '/' -f1)
+/bin/echo "The IP is $IPADDR"
+
+NETMASK=$(/sbin/ip add list eth0 | /bin/grep 'inet ' | /bin/awk '{print $2}' | /usr/bin/xargs /bin/ipcalc -m | /bin/cut -d '=' -f2)
+/bin/echo "The netmask is $NETMASK"
+
+GATEWAY=$(/sbin/route -n | /bin/awk '{print $2}' | /bin/grep -v '0.0.0.0' | /bin/grep -P '\d')
+#/bin/echo $GATEWAY > /root/gateway
+/bin/echo "The gateway is $GATEWAY"
+
+# set /etc/sysconfig/network-scripts/ifcfg-eth0
+/bin/echo "#ifcfg eth0 Network
+DEVICE='eth0'
+BOOTPROTO='static'
+IPV6INIT='no'
+IPV6_AUTOCONF='no'
+ONBOOT='yes'
+TYPE='Ethernet'
+IPADDR='$IPADDR'
+NETMASK='$NETMASK'
+GATEWAY='$GATEWAY'
+" > /etc/sysconfig/network-scripts/ifcfg-eth0
+
